@@ -1,0 +1,14 @@
+---
+##Docker Install
+- name: Install Docker from repo for Centos 7
+  yum:
+    name: "{{repo_docker}}"
+    state: present
+  notify: Restart docker
+
+- name: add user '{{ansible_user}}' to group docker
+  user:
+    name: '{{ansible_user}}'
+    groups: docker
+    append: yes
+  notify: Restart docker

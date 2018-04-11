@@ -1,0 +1,31 @@
+---
+- name: Install Docker CE on Instance
+  gather_facts: false
+  hosts: all
+  roles:
+    - {role: 'docker_install', tags: 'docker'}
+
+- name: Ativate docker swarm
+  gather_facts: false
+  hosts: manage
+  tasks:
+    - name: Activate Docker swarm
+      shell: docker swarm init --advertise-addr '{{ansible_host}}'
+      register: swarm_active
+
+    - name: Check if Active, Debug
+      debug:
+        msg: "Hello {{swarm_active}}"
+
+    - name: takes token for worker
+      shell: docker swarm join-token -q worker
+      register: tokenkey
+
+    - debug: var=tokenkey.stdout
+
+- name: Add docker nodes
+  gather_facts: false
+  hosts: node
+  tasks:
+    - name: add docker nodes
+      shell: docker swarm join --token {{hostvars['manage'].tokenkey.stdout}} {{hostvars['manage'].ansible_host}}:2377
